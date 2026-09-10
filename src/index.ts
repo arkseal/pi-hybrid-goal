@@ -1,4 +1,5 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { Text } from "@earendil-works/pi-tui";
 import { Type } from "typebox";
 import { GoalManager } from "./goal-state.js";
 import { buildCompactionGoalDelta } from "./compaction-delta.js";
@@ -23,6 +24,16 @@ export default function hybridGoalExtension(pi: ExtensionAPI) {
       },
       { additionalProperties: false }
     ),
+    renderCall(args: any, theme: any, context: any) {
+      const text = (context.lastComponent as Text | undefined) ?? new Text("", 0, 0);
+      let content = theme.fg("success", theme.bold("goal_complete "));
+      if (args?.summary) {
+        const preview = args.summary.length > 70 ? `${args.summary.slice(0, 67)}...` : args.summary;
+        content += theme.fg("muted", `"${preview}"`);
+      }
+      text.setText(content);
+      return text;
+    },
     async execute(_toolCallId, params) {
       const res = GoalManager.completeGoal(params.summary);
       if (!res.success) {
@@ -53,6 +64,16 @@ export default function hybridGoalExtension(pi: ExtensionAPI) {
       },
       { additionalProperties: false }
     ),
+    renderCall(args: any, theme: any, context: any) {
+      const text = (context.lastComponent as Text | undefined) ?? new Text("", 0, 0);
+      let content = theme.fg("error", theme.bold("goal_blocked "));
+      if (args?.reason) {
+        const preview = args.reason.length > 70 ? `${args.reason.slice(0, 67)}...` : args.reason;
+        content += theme.fg("accent", `"${preview}"`);
+      }
+      text.setText(content);
+      return text;
+    },
     async execute(_toolCallId, params) {
       const res = GoalManager.blockGoal(params.reason, params.suggestedAction);
       if (!res.success) {
@@ -87,6 +108,14 @@ export default function hybridGoalExtension(pi: ExtensionAPI) {
       },
       { additionalProperties: false }
     ),
+    renderCall(args: any, theme: any, context: any) {
+      const text = (context.lastComponent as Text | undefined) ?? new Text("", 0, 0);
+      let content = theme.fg("toolTitle", theme.bold("goal_wait "));
+      const sec = args?.seconds ?? 5;
+      content += theme.fg("accent", `${sec}s`);
+      text.setText(content);
+      return text;
+    },
     async execute(_toolCallId, params) {
       const sec = params.seconds ?? 5;
       await new Promise((r) => setTimeout(r, sec * 1000));
