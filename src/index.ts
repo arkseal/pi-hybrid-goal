@@ -154,6 +154,7 @@ export default function hybridGoalExtension(pi: ExtensionAPI) {
     event.messages.push({
       role: "user",
       content: delta,
+      timestamp: Date.now(),
     });
     return { messages: event.messages };
   });
